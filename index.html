@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>二伯杀毒 ErBaiAV · C++ 杀毒引擎</title>
+<meta name="description" content="二伯杀毒 ErBaiAV —— 用 C++ 编写的 Windows 杀毒引擎学习项目。特征库查杀 + 启发式分析 + 隔离区管理 + 实时监控。">
+<link rel="icon" type="image/x-icon" href="assets/ErBaiAV.ico">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ======== 导航 ======== -->
+<header class="nav" id="nav">
+  <div class="container nav-inner">
+    <a class="brand" href="#top">
+      <span class="brand-icon">🛡️</span>
+      <span class="brand-name">二伯杀毒</span>
+      <span class="brand-en">ErBaiAV</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#features">特性</a>
+      <a href="#ui">界面</a>
+      <a href="#stats">数据</a>
+      <a href="#tech">原理</a>
+      <a href="#download">下载</a>
+      <a href="#about">关于</a>
+    </nav>
+    <a class="btn btn-primary nav-cta" href="#download">立即下载</a>
+    <button class="nav-toggle" id="navToggle" aria-label="菜单">☰</button>
+  </div>
+</header>
+
+<!-- ======== Hero ======== -->
+<section class="hero" id="top">
+  <div class="hero-grid"></div>
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <span class="badge">v2.0 · C++ 学习项目</span>
+      <h1>二伯杀毒 <span class="grad">ErBaiAV</span></h1>
+      <p class="hero-sub">特征库查杀 + 启发式分析 + 隔离区管理 + 实时监控。<br>
+        卡巴斯基同款技术栈的核心原理，用 <b>C++ 从零实现</b>。</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="downloads/ErBaiAV.exe" download>
+          ⬇ 下载 Windows 图形版
+        </a>
+        <a class="btn btn-ghost btn-lg" href="#tech">了解技术原理</a>
+      </div>
+      <div class="hero-meta">
+        <span>⚙ 免安装 · 绿色版</span>
+        <span>🧬 ClamAV 官方病毒库</span>
+        <span>🖥 Win32 原生 GUI</span>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+          <span class="terminal-title">ErbaiAV — scan C:\Users\you\Downloads --heu</span>
+        </div>
+        <div class="terminal-body">
+          <p class="t-dim">二伯杀毒 ErBaiAV v2.0 (C++学习项目)</p>
+          <p class="t-dim">特征库: ClamAV 格式 | 启发式: 内置 | 签名: 122,012</p>
+          <p class="t-cyan">[扫描] C:\Users\you\Downloads\invoice.pdf <span class="t-ok">✓ 干净</span></p>
+          <p class="t-cyan">[扫描] C:\Users\you\Downloads\setup.exe <span class="t-warn">⚠ 可疑 (启发式 3/10)</span></p>
+          <p class="t-cyan">[扫描] C:\Users\you\Downloads\crack.zip <span class="t-bad">✗ 发现威胁 EICAR-Test-File</span></p>
+          <p class="t-dim">--------------------------------</p>
+          <p>已扫描 <b class="t-cyan">1,284</b> 个文件 · 发现 <b class="t-bad">3</b> 个威胁 · 已隔离 <b class="t-purple">3</b> 个</p>
+          <p class="t-dim">退出码 2 = 发现威胁 &nbsp;|&nbsp; 实时监控运行中 <span class="pulse-dot"></span></p>
+        </div>
+      </div>
+      <div class="orbit orbit-1"></div>
+      <div class="orbit orbit-2"></div>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="container stats-strip">
+      <div class="stat"><b class="count" data-target="122012">0</b><span>已加载病毒签名</span></div>
+      <div class="stat"><b class="count" data-target="407891">0</b><span>完整病毒库条目</span></div>
+      <div class="stat"><b class="count" data-target="15">0</b><span>启发式危险行为特征</span></div>
+      <div class="stat"><b>6</b><span>GUI 功能页面</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== 特性 ======== -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-head">
+      <h2>核心能力</h2>
+      <p>商业杀软的核心原理，一个学习项目全部拿下</p>
+    </div>
+    <div class="grid features-grid">
+      <article class="card feat">
+        <div class="feat-icon">🧬</div>
+        <h3>特征库查杀</h3>
+        <p>解析 ClamAV 官方病毒库：HDB 哈希精确比对 + NDB 十六进制特征码匹配，支持 <code>??</code> 通配字节。</p>
+      </article>
+      <article class="card feat">
+        <div class="feat-icon">🕵️</div>
+        <h3>启发式分析</h3>
+        <p>PE 文件解析 + 15 种危险 API 检测 + 高熵加壳识别，不依赖病毒库也能发现未知恶意文件。</p>
+      </article>
+      <article class="card feat">
+        <div class="feat-icon">🛰️</div>
+        <h3>实时监控</h3>
+        <p>基于 ReadDirectoryChangesW 监视目录变化，新文件出现即自动扫描，可一键自动隔离。</p>
+      </article>
+      <article class="card feat">
+        <div class="feat-icon">🧊</div>
+        <h3>隔离区管理</h3>
+        <p>检测到威胁移动到隔离区，支持一键恢复或彻底删除，附元数据记录，误报可轻松找回。</p>
+      </article>
+      <article class="card feat">
+        <div class="feat-icon">📋</div>
+        <h3>扫描报告</h3>
+        <p>感染统计 + 退出码约定（0=干净 / 2=发现威胁），命令行可轻松接入自动化脚本。</p>
+      </article>
+      <article class="card feat">
+        <div class="feat-icon">🔑</div>
+        <h3>YARA 规则</h3>
+        <p>内置轻量 YARA 引擎，支持自定义规则文件扫描，安全研究者的标配能力。</p>
+      </article>
+      <article class="card feat">
+        <div class="feat-icon">⚙️</div>
+        <h3>进程扫描</h3>
+        <p>枚举运行中的进程，结合特征库与可疑识别模型，检测内存中加载的恶意程序。</p>
+      </article>
+      <article class="card feat">
+        <div class="feat-icon">🎛️</div>
+        <h3>六页赛博 GUI</h3>
+        <p>防护中心 / 病毒查杀 / 隔离区 / 信任区 / 工具箱 / 设置，霓虹光效 + HUD 网格 + 切角卡片。</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ======== 界面预览 ======== -->
+<section class="section section-dark" id="ui">
+  <div class="container">
+    <div class="section-head">
+      <h2>赛博朋克界面</h2>
+      <p>下面的窗口是官方界面的 1:1 复刻演示，点左侧菜单切换页面</p>
+    </div>
+
+    <div class="app-window">
+      <div class="app-titlebar">
+        <div class="app-dots"><span></span><span></span><span></span></div>
+        <span>二伯杀毒 ErBaiAV v2.0</span>
+        <span class="app-titlebar-right">— □ ×</span>
+      </div>
+      <div class="app-body">
+        <aside class="app-sidebar">
+          <div class="app-logo">🛡️ 二伯杀毒</div>
+          <button class="side-item active" data-page="guard">🛡 防护中心</button>
+          <button class="side-item" data-page="scan">🔍 病毒查杀</button>
+          <button class="side-item" data-page="quar">🧊 隔离区</button>
+          <button class="side-item" data-page="trust">🤝 信任区</button>
+          <button class="side-item" data-page="tools">🧰 工具箱</button>
+          <button class="side-item" data-page="settings">⚙ 设置</button>
+          <div class="side-status">
+            <span class="pulse-dot"></span> 实时防护 · 已开启
+          </div>
+        </aside>
+
+        <main class="app-main">
+          <!-- 防护中心 -->
+          <div class="page active" id="page-guard">
+            <h3>防护中心</h3>
+            <div class="shield-row">
+              <div class="shield-badge"><span class="shield-icon">🛡️</span><b>防护已开启</b><small>病毒库: 122,012 条</small></div>
+              <div class="mini-cards">
+                <div class="mini-card"><b class="count" data-target="2841">0</b><span>已扫描文件</span></div>
+                <div class="mini-card"><b class="count" data-target="12">0</b><span>发现威胁</span></div>
+                <div class="mini-card"><b class="count" data-target="6">0</b><span>已隔离</span></div>
+                <div class="mini-card"><b>今天</b><span>上次扫描</span></div>
+              </div>
+            </div>
+            <div class="scan-bar-wrap">
+              <div class="scan-bar"><i style="width:68%"></i></div>
+              <div class="scan-bar-meta"><span>全盘扫描 · 68%</span><span>1,284 / 1,889 文件</span></div>
+            </div>
+          </div>
+
+          <!-- 病毒查杀 -->
+          <div class="page" id="page-scan">
+            <h3>病毒查杀</h3>
+            <div class="scan-options">
+              <button class="chip active">⚡ 快速扫描</button>
+              <button class="chip">📁 自定义扫描</button>
+              <button class="chip">💿 全盘扫描</button>
+              <button class="chip">🧬 启发式开启</button>
+            </div>
+            <div class="result-list">
+              <div class="result-item ok"><span>✓</span> C:\Windows\System32\drivers\etc\hosts <em>干净</em></div>
+              <div class="result-item ok"><span>✓</span> C:\Users\you\Documents\report.pdf <em>干净</em></div>
+              <div class="result-item warn"><span>⚠</span> C:\Users\you\Downloads\setup.exe <em>可疑 · 启发式 3/10</em></div>
+              <div class="result-item bad"><span>✗</span> C:\Users\you\Downloads\crack.zip <em>EICAR-Test-File</em></div>
+            </div>
+          </div>
+
+          <!-- 隔离区 -->
+          <div class="page" id="page-quar">
+            <h3>隔离区</h3>
+            <div class="result-list">
+              <div class="result-item bad"><span>🧊</span> crack.zip <em>EICAR-Test-File · 2026-08-05</em></div>
+              <div class="result-item bad"><span>🧊</span> keygen.exe <em>Win32.Trojan.FakeAV · 2026-08-04</em></div>
+              <div class="result-item warn"><span>🧊</span> hacktool.bin <em>可疑文件 · 2026-08-03</em></div>
+            </div>
+            <div class="list-actions"><button class="chip">↩ 恢复</button><button class="chip danger">🗑 彻底删除</button></div>
+          </div>
+
+          <!-- 信任区 -->
+          <div class="page" id="page-trust">
+            <h3>信任区</h3>
+            <div class="result-list">
+              <div class="result-item ok"><span>🤝</span> DevTools\compile_tool.exe <em>已信任</em></div>
+              <div class="result-item ok"><span>🤝</span> Game\anti-cheat.exe <em>已信任</em></div>
+              <div class="result-item ok"><span>🤝</span> mods\fabric-loader.jar <em>已信任</em></div>
+            </div>
+            <div class="list-actions"><button class="chip">＋ 添加文件</button><button class="chip">🗑 移除</button></div>
+          </div>
+
+          <!-- 工具箱 -->
+          <div class="page" id="page-tools">
+            <h3>工具箱</h3>
+            <div class="tool-grid">
+              <div class="tool-item">🕵️ 启发式分析器</div>
+              <div class="tool-item">🧬 病毒库信息</div>
+              <div class="tool-item">📜 YARA 规则扫描</div>
+              <div class="tool-item">🔄 病毒库更新</div>
+            </div>
+          </div>
+
+          <!-- 设置 -->
+          <div class="page" id="page-settings">
+            <h3>设置</h3>
+            <div class="setting-row"><span>实时防护</span><label class="switch"><input type="checkbox" checked><i></i></label></div>
+            <div class="setting-row"><span>开机自启</span><label class="switch"><input type="checkbox" checked><i></i></label></div>
+            <div class="setting-row"><span>右键菜单扫描</span><label class="switch"><input type="checkbox" checked><i></i></label></div>
+            <div class="setting-row"><span>自动隔离威胁</span><label class="switch"><input type="checkbox"><i></i></label></div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== 数据 ======== -->
+<section class="section" id="stats">
+  <div class="container">
+    <div class="section-head">
+      <h2>病毒库数据</h2>
+      <p>全部来自本站解析的 ClamAV 官方数据库，真实可查</p>
+    </div>
+    <div class="db-panel">
+      <div class="db-total">
+        <b class="count" data-target="122012">0</b>
+        <span>当前引擎实际加载签名（HDB + NDB）</span>
+        <small>完整数据库目录共 407,891 行 · LDB/MDB 格式支持开发中</small>
+      </div>
+      <div class="db-bars">
+        <div class="db-row"><span class="db-name">HDB 哈希签名</span><div class="db-bar"><i style="width:20%"></i></div><b class="count" data-target="20425">0</b></div>
+        <div class="db-row"><span class="db-name">NDB 特征码</span><div class="db-bar"><i style="width:100%"></i></div><b class="count" data-target="101587">0</b></div>
+        <div class="db-row dim"><span class="db-name">LDB 逻辑签名（待支持）</span><div class="db-bar"><i style="width:62%"></i></div><b class="count" data-target="273347">0</b></div>
+        <div class="db-row dim"><span class="db-name">MDB 元签名（待支持）</span><div class="db-bar"><i style="width:12%"></i></div><b class="count" data-target="11575">0</b></div>
+      </div>
+    </div>
+
+    <div class="grid tri">
+      <article class="card num-card">
+        <b>407,891</b>
+        <span>病毒库总条目</span>
+        <small>HDB 20,425 + NDB 101,587 + LDB 273,347 + MDB 11,575 等</small>
+      </article>
+      <article class="card num-card">
+        <b>2 MB</b>
+        <span>特征库最大单文件</span>
+        <small>clamav.hdb 哈希库，毫秒级加载</small>
+      </article>
+      <article class="card num-card">
+        <b>15 种</b>
+        <span>启发式危险特征</span>
+        <small>CreateRemoteThread / WriteProcessMemory / 加壳检测等</small>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ======== 技术原理 ======== -->
+<section class="section section-dark" id="tech">
+  <div class="container">
+    <div class="section-head">
+      <h2>技术原理</h2>
+      <p>零依赖标准库实现 · MSVC C++17 编译 · 单文件引擎</p>
+    </div>
+    <div class="grid tech-grid">
+      <article class="card tech">
+        <h3>🧬 HDB 哈希查杀</h3>
+        <pre><code>MD5:文件大小:病毒名
+44d88612fea8a8f36de82e1278abb02f:68:EICAR-Test-File</code></pre>
+        <p>RFC 1321 轻量 MD5 实现，全库加载毫秒级，精确比对文件指纹。</p>
+      </article>
+      <article class="card tech">
+        <h3>🔑 NDB 特征码查杀</h3>
+        <pre><code>病毒名:目标类型:偏移:十六进制签名
+EICAR-Test-NDB:0:*:58354f2150254041505b345c505a583534</code></pre>
+        <p>十六进制特征码匹配，支持 <code>??</code> 通配字节，按目标类型过滤（PE/ELF/Mach-O）。</p>
+      </article>
+      <article class="card tech">
+        <h3>🕵️ 启发式引擎</h3>
+        <ul class="tech-list">
+          <li>PE 头解析 + 可疑节区名检测（UPX / pack）</li>
+          <li>15 种危险 API：CreateRemoteThread、GetAsyncKeyState…</li>
+          <li>内容熵 &gt; 7.5 判定加壳混淆</li>
+          <li>评分 ≥5 恶意 · ≥2 可疑</li>
+        </ul>
+      </article>
+      <article class="card tech">
+        <h3>🔨 构建方式</h3>
+        <pre><code>python build.py        # 命令行版
+python build_gui.py    # 图形界面版
+python update_database.py --daily --main</code></pre>
+        <p>MSVC 14.44 + Windows SDK 10.0.26100，Python 一键构建。</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ======== 下载 ======== -->
+<section class="section" id="download">
+  <div class="container">
+    <div class="section-head">
+      <h2>下载</h2>
+      <p>免安装 · 绿色版 · 学习用途</p>
+    </div>
+    <div class="grid dl-grid">
+      <article class="card dl-card">
+        <div class="dl-icon">🖥️</div>
+        <h3>图形版 ErBaiAV.exe</h3>
+        <p>v2.0 赛博朋克 GUI · 六页面 · 实时防护 · 病毒查杀 · 隔离区</p>
+        <div class="dl-meta">547 KB · Windows x64 · 免安装</div>
+        <a class="btn btn-primary" href="downloads/ErBaiAV.exe" download>⬇ 下载图形版</a>
+      </article>
+      <article class="card dl-card">
+        <div class="dl-icon">⌨️</div>
+        <h3>命令行版 erbai_av.exe</h3>
+        <p>scan / monitor / yara / quarantine / whitelist / process，适合脚本与自动化</p>
+        <div class="dl-meta">468 KB · Windows x64 · 退出码 0=干净 2=威胁</div>
+        <a class="btn btn-ghost" href="downloads/erbai_av.exe" download>⬇ 下载命令行版</a>
+      </article>
+      <article class="card dl-card">
+        <div class="dl-icon">📥</div>
+        <h3>病毒库更新脚本</h3>
+        <p>从 ClamAV 官方源下载并解析最新 CVD 病毒库，自动生成特征文件</p>
+        <div class="dl-meta">update_database.py · 需 Python 3</div>
+        <a class="btn btn-ghost" href="downloads/update_database.py" download>⬇ 下载脚本</a>
+      </article>
+      <article class="card dl-card">
+        <div class="dl-icon">📚</div>
+        <h3>项目文档</h3>
+        <p>完整 README：架构说明、特征库格式、构建方式、已知限制与后续规划</p>
+        <div class="dl-meta">README.md</div>
+        <a class="btn btn-ghost" href="downloads/README.md" download>⬇ 查看文档</a>
+      </article>
+    </div>
+    <div class="notice">
+      <b>⚠️ 诚实说明：</b>这是一个学习项目，演示杀毒引擎的核心原理，<b>不具备卡巴斯基级别的防护能力</b>（云查杀、行为沙箱、内核保护等需要巨大投入）。请勿将其作为主力杀毒软件。
+    </div>
+  </div>
+</section>
+
+<!-- ======== 关于 / FAQ ======== -->
+<section class="section section-dark" id="about">
+  <div class="container">
+    <div class="section-head">
+      <h2>关于与常见问题</h2>
+    </div>
+    <div class="faq">
+      <details open>
+        <summary>二伯杀毒是什么？</summary>
+        <p>一个用 C++ 从零编写的 Windows 杀毒引擎学习项目，实现了商业杀软的核心原理：特征库查杀、启发式分析、隔离区管理、实时监控与图形界面。</p>
+      </details>
+      <details>
+        <summary>它安全吗？为什么是"学习项目"？</summary>
+        <p>源码完全开放、无任何联网行为（可审计），仅做本地文件扫描与隔离。但它只是学习项目，病毒库规模、云查杀、行为监控等能力与商业杀软有巨大差距，不建议当作主力防护。</p>
+      </details>
+      <details>
+        <summary>如何更新病毒库？</summary>
+        <p>运行 <code>python update_database.py --daily --main</code>，脚本会从 ClamAV 官方源（database.clamav.net）下载最新病毒库并解析为 HDB/NDB 格式。</p>
+      </details>
+      <details>
+        <summary>扫描到误报了怎么办？</summary>
+        <p>将文件加入信任区（whitelist --add &lt;文件&gt;），或从隔离区一键恢复。启发式误报可通过关闭 --heu 参数降低灵敏度。</p>
+      </details>
+      <details>
+        <summary>支持哪些平台？</summary>
+        <p>当前仅支持 Windows x64（MSVC 编译），后续规划支持 Linux 命令行版。</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ======== 页脚 ======== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>🛡️ 二伯杀毒 ErBaiAV</h4>
+        <p>C++ 杀毒引擎学习项目 · 特征库查杀 + 启发式分析 + 隔离区管理</p>
+      </div>
+      <div>
+        <h4>兄弟站点</h4>
+        <a href="https://jimmylrb.github.io/lrb/" target="_blank" rel="noopener">🔐 网络安全意识培训</a>
+        <a href="https://jimmylrb.github.io/minecraft-site/" target="_blank" rel="noopener">⛏️ 我的世界 · 方块大陆</a>
+      </div>
+      <div>
+        <h4>链接</h4>
+        <a href="#features">核心能力</a>
+        <a href="#download">下载</a>
+        <a href="#tech">技术原理</a>
+      </div>
+    </div>
+    <p class="copyright">© 2026 二伯杀毒 ErBaiAV · 学习用途，请勿用于恶意目的 · 不收集任何用户数据</p>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>二伯AI · 智能分析演示</title>
+<style>
+  :root{
+    --bg:#0a0e17; --panel:#111827; --line:#1f2937; --cyan:#22d3ee; --purple:#a78bfa;
+    --green:#34d399; --red:#f87171; --amber:#fbbf24; --text:#e5e7eb; --dim:#9ca3af;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:"Segoe UI","Microsoft YaHei",sans-serif;min-height:100vh;padding:24px}
+  .wrap{max-width:860px;margin:0 auto}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+  .logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--cyan),var(--purple));
+        display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 18px rgba(34,211,238,.4)}
+  h1{font-size:22px;letter-spacing:1px}
+  h1 span{background:linear-gradient(90deg,var(--cyan),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--dim);font-size:13px;margin-top:4px}
+  .api-row{display:flex;gap:8px;align-items:center;margin-bottom:18px;font-size:13px;color:var(--dim)}
+  .api-row input{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--text);
+        border-radius:8px;padding:8px 12px;outline:none}
+  .api-row input:focus{border-color:var(--cyan)}
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{background:var(--panel);border:1px solid var(--line);color:var(--dim);padding:9px 16px;
+       border-radius:10px;cursor:pointer;font-size:14px;transition:.2s}
+  .tab:hover{color:var(--text)}
+  .tab.active{color:var(--bg);background:linear-gradient(135deg,var(--cyan),var(--purple));
+       border-color:transparent;font-weight:600}
+  .panel{display:none}
+  .panel.active{display:block}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  label{display:block;font-size:13px;color:var(--dim);margin-bottom:8px}
+  textarea,input[type=text]{width:100%;background:#0d1524;border:1px solid var(--line);color:var(--text);
+       border-radius:10px;padding:12px;font-size:14px;outline:none;font-family:inherit}
+  textarea{min-height:96px;resize:vertical}
+  textarea:focus,input[type=text]:focus{border-color:var(--cyan)}
+  .row2{display:flex;gap:10px}
+  .row2>div{flex:1}
+  .btn{display:inline-block;margin-top:12px;padding:10px 22px;border:none;border-radius:10px;cursor:pointer;
+       font-size:14px;font-weight:600;color:var(--bg);
+       background:linear-gradient(135deg,var(--cyan),var(--purple));transition:.2s}
+  .btn:hover{filter:brightness(1.1);box-shadow:0 0 14px rgba(34,211,238,.35)}
+  .btn:disabled{opacity:.5;cursor:wait}
+  #result,#resultChat,#resultSearch,#resultCode{margin-top:14px;background:#0d1524;border:1px solid var(--line);border-radius:10px;
+       padding:14px;font-family:Consolas,monospace;font-size:13px;white-space:pre-wrap;word-break:break-all;
+       color:var(--cyan);min-height:80px;max-height:480px;overflow:auto}
+  #resultCode{color:var(--green);background:#0a120f;border-color:#14532d}
+  .hint{color:var(--dim);font-size:12px;margin-top:8px}
+  .agent-head{color:var(--purple);font-weight:600;margin-bottom:6px;font-size:14px}
+  .agent-sec{color:var(--cyan);font-weight:600;margin:10px 0 4px}
+  .log-line{margin:2px 0;color:var(--text);font-size:13px}
+  .log-line.done{color:var(--green);font-weight:600}
+  .log-pre{background:#0a0e17;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px;
+       overflow:auto;max-height:220px;color:var(--green);white-space:pre-wrap;word-break:break-all;margin:4px 0}
+  .log-pre.err{color:var(--red)}
+  .fileitem{display:block;cursor:pointer;color:var(--dim);padding:2px 6px;border-radius:6px;font-size:13px}
+  .fileitem:hover{color:var(--cyan);background:#0d1524}
+  .summary{color:var(--text);background:#0d1524;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:13px;margin-top:4px}
+  .dim{color:var(--dim)}
+  .mini{font-size:12px;color:var(--dim);margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🛡️</div>
+    <div>
+      <h1>二伯<span>AI</span> · 智能分析</h1>
+      <div class="sub">Qwen(生成对话/写代码) + Llama(本地高效推理) + BERT(语义理解) 可插拔 AI 模块</div>
+    </div>
+  </header>
+
+  <div class="api-row">
+    <span>服务地址</span>
+    <input id="apiBase" value="http://127.0.0.1:8765" spellcheck="false">
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="analyze">威胁分析</button>
+    <button class="tab" data-tab="code">写代码</button>
+    <button class="tab" data-tab="chat">AI 对话</button>
+    <button class="tab" data-tab="search">语义检索</button>
+    <button class="tab" data-tab="agent">编程代理</button>
+  </div>
+
+  <div class="panel active" id="tab-analyze">
+    <div class="card">
+      <label>输入文本（邮件 / 日志 / 提示语 / 可疑字符串）</label>
+      <textarea id="txtText">紧急通知：您的账户异常，请点击链接输入密码验证，否则将被冻结！</textarea>
+      <button class="btn" id="btnAnalyze">开始分析</button>
+      <div id="result"></div>
+      <div class="hint">分析流程：内置规则引擎(BERT式理解) → 可选远程大模型(Qwen)补充解读</div>
+    </div>
+  </div>
+
+  <div class="panel" id="tab-code">
+    <div class="card">
+      <label>描述你想让 AI 写的代码</label>
+      <textarea id="txtReq">用 Python 写一个冒泡排序</textarea>
+      <div class="row2">
+        <div>
+          <label>语言（可选）</label>
+          <input type="text" id="txtLang" placeholder="python / javascript / cpp / java">
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn" id="btnCode" style="width:100%">让 AI 写代码</button>
+        </div>
+      </div>
+      <div id="resultCode"></div>
+      <div class="hint">后端优先级：远程代码模型(Qwen-Coder) → 本地 Ollama 代码模型 → 内置模板（当前无模型时用模板，覆盖排序/HTTP服务/爬虫/防抖等）</div>
+    </div>
+  </div>
+
+  <div class="panel" id="tab-chat">
+    <div class="card">
+      <label>向 AI 安全助手提问</label>
+      <textarea id="txtChat">什么是勒索软件？如何防范？</textarea>
+      <button class="btn" id="btnChat">发送</button>
+      <div id="resultChat"></div>
+      <div class="hint">后端优先级：远程 Qwen → 本地 Ollama(Llama/Qwen) → 规则兜底</div>
+    </div>
+  </div>
+
+  <div class="panel" id="tab-search">
+    <div class="card">
+      <label>查询（在样本库中找语义相似项）</label>
+      <input type="text" id="txtQuery" value="文件被加密了，要我付钱才能解锁">
+      <label style="margin-top:12px">样本库（每行一条，JSON：id + text）</label>
+      <textarea id="txtCorpus">{"id":1,"text":"勒索软件加密用户文件并要求比特币赎金"}
+{"id":2,"text":"挖矿木马占用 CPU 挖门罗币"}
+{"id":3,"text":"钓鱼邮件诱导用户输入银行卡密码"}
+{"id":4,"text":"广告弹窗劫持浏览器主页"}
+{"id":5,"text":"键盘记录器窃取登录密码"}</textarea>
+      <button class="btn" id="btnSearch">检索 Top 3</button>
+      <div id="resultSearch"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="tab-agent">
+    <div class="card">
+      <label>描述一个编程任务（像跟 Codex 说话一样）</label>
+      <textarea id="txtAgentTask">用 Python 写一个快速排序，保存为 main.py，然后运行验证</textarea>
+      <div class="row2">
+        <div>
+          <label>工作区路径（留空=默认 ai-module/workspace）</label>
+          <input type="text" id="txtWorkspace" placeholder="例如 C:\work\myapp">
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:8px">
+          <button class="btn" id="btnAgentRun" style="margin-top:0">▶ 开始编程</button>
+          <button class="btn" id="btnAgentPlan" style="margin-top:0;background:var(--panel);color:var(--cyan);border:1px solid var(--line)">📋 只看计划</button>
+        </div>
+      </div>
+      <div id="resultAgent" style="margin-top:14px"></div>
+      <div class="hint">代理流程：理解任务 → 制定计划 → 读写工作区文件 → 执行命令验证 → 总结。后端：远程 Qwen → 本地 Ollama → 规则模板。</div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <label>📁 工作区文件浏览器</label>
+      <div class="row2">
+        <div>
+          <button class="btn" id="btnListFiles" style="margin-top:0">刷新文件列表</button>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:8px">
+          <input type="text" id="txtReadPath" placeholder="文件名，如 main.py" style="flex:2">
+          <button class="btn" id="btnReadFile" style="margin-top:0">读取</button>
+        </div>
+      </div>
+      <div id="fileList" class="mini" style="margin-top:10px"></div>
+      <pre id="fileContent" style="background:#0a0e17;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;max-height:260px;overflow:auto;white-space:pre-wrap;word-break:break-all;color:var(--green)"></pre>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <label>💻 命令控制台（在工作区目录内执行）</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="txtCmd" placeholder="例如 python main.py" style="flex:1">
+        <button class="btn" id="btnExec" style="margin-top:0">执行</button>
+      </div>
+      <pre id="execOut" style="background:#0a0e17;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;max-height:200px;overflow:auto;white-space:pre-wrap;word-break:break-all;color:var(--cyan);margin-top:10px"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var BASE = document.getElementById('apiBase');
+
+  function call(path, payload) {
+    return fetch(BASE.value.replace(/\/$/, '') + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j.ok) throw new Error(j.error);
+        return j.data;
+      });
+  }
+
+  // 标签切换
+  document.querySelectorAll('.tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+      document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.getAttribute('data-tab')).classList.add('active');
+    });
+  });
+
+  document.getElementById('btnAnalyze').addEventListener('click', function () {
+    var btn = this, out = document.getElementById('result');
+    btn.disabled = true; out.textContent = '分析中...';
+    call('/v1/analyze/text', { text: document.getElementById('txtText').value })
+      .then(function (d) {
+        var s = '判定: [' + d.label + ']  置信度: ' + d.confidence + '\n';
+        d.reasons.forEach(function (r) { s += '• ' + r + '\n'; });
+        if (d.ai_explanation) s += '\n[AI 解读]\n' + d.ai_explanation;
+        out.textContent = s;
+      })
+      .catch(function (e) { out.textContent = '错误: ' + e.message + '\n\n请确认已启动: python server.py'; })
+      .then(function () { btn.disabled = false; });
+  });
+
+  document.getElementById('btnCode').addEventListener('click', function () {
+    var btn = this, out = document.getElementById('resultCode');
+    btn.disabled = true; out.textContent = '写代码中...';
+    call('/v1/code', {
+      request: document.getElementById('txtReq').value,
+      language: document.getElementById('txtLang').value || null
+    }).then(function (d) {
+      var head = '后端: ' + d.backend;
+      if (d.name) head += ' | 模板: ' + d.name;
+      if (d.desc) head += ' | ' + d.desc;
+      if (d.model) head += ' | 模型: ' + d.model;
+      if (d.note) head += '\n提示: ' + d.note;
+      out.textContent = head + '\n\n' + d.code;
+    }).catch(function (e) { out.textContent = '错误: ' + e.message; })
+      .then(function () { btn.disabled = false; });
+  });
+
+  document.getElementById('btnChat').addEventListener('click', function () {
+    var btn = this, out = document.getElementById('resultChat');
+    btn.disabled = true; out.textContent = '思考中...';
+    call('/v1/chat', { text: document.getElementById('txtChat').value })
+      .then(function (d) { out.textContent = '[' + d.backend + ']\n\n' + d.content; })
+      .catch(function (e) { out.textContent = '错误: ' + e.message; })
+      .then(function () { btn.disabled = false; });
+  });
+
+  document.getElementById('btnSearch').addEventListener('click', function () {
+    var btn = this, out = document.getElementById('resultSearch');
+    btn.disabled = true; out.textContent = '检索中...';
+    var corpus = document.getElementById('txtCorpus').value.split('\n')
+      .map(function (line) { return line.trim(); })
+      .filter(Boolean)
+      .map(function (line) { return JSON.parse(line); });
+    call('/v1/search', { query: document.getElementById('txtQuery').value, corpus: corpus, top_k: 3 })
+      .then(function (d) {
+        var s = '';
+        d.forEach(function (item) { s += (item.score.toFixed(4) + '  ' + item.text + '\n'); });
+        out.textContent = s;
+      })
+      .catch(function (e) { out.textContent = '错误: ' + e.message; })
+      .then(function () { btn.disabled = false; });
+  });
+
+  // ===== 编程代理 =====
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function agentPayload() {
+    return {
+      task: document.getElementById('txtAgentTask').value,
+      workspace: document.getElementById('txtWorkspace').value || null
+    };
+  }
+  function renderAgent(d, out) {
+    var h = '<div class="agent-head">🤖 后端: ' + esc(d.backend) + ' | 耗时: ' + d.elapsed_ms + 'ms | 状态: ' + esc(d.status) + '</div>';
+    h += '<div class="agent-sec">📋 计划</div><ol style="margin-left:18px;font-size:13px">';
+    d.plan.forEach(function (p) { h += '<li>' + esc(p) + '</li>'; });
+    h += '</ol>';
+    h += '<div class="agent-sec">⚙️ 执行日志</div>';
+    d.actions.forEach(function (r) {
+      if (r.action === 'write_file') {
+        h += '<div class="log-line">📝 ' + esc(r.op) + ' <b>' + esc(r.path) + '</b> (' + r.bytes + ' 字节)' + (r.ok ? '' : ' ❌ ' + esc(r.error || '')) + '</div>';
+        if (r.preview) h += '<pre class="log-pre">' + esc(r.preview) + '</pre>';
+      } else if (r.action === 'run') {
+        h += '<div class="log-line">' + (r.ok ? '✅' : '❌') + ' 运行: ' + esc(r.cmd) + ' (返回码 ' + r.returncode + ')' + (r.timed_out ? ' [超时]' : '') + '</div>';
+        if (r.stdout) h += '<pre class="log-pre">' + esc(r.stdout) + '</pre>';
+        if (r.stderr) h += '<pre class="log-pre err">' + esc(r.stderr) + '</pre>';
+      } else if (r.action === 'list_dir') {
+        h += '<div class="log-line">📂 工作区文件(' + r.count + '): ' + esc(r.files.join(', ')) + '</div>';
+      } else if (r.action === 'read_file') {
+        h += '<div class="log-line">📖 ' + esc(r.path) + ' (' + r.size + ' 字节)</div>';
+        h += '<pre class="log-pre">' + esc((r.content || '').slice(0, 1500)) + '</pre>';
+      } else if (r.action === 'explain') {
+        h += '<div class="log-line">💡 讲解 ' + esc(r.path) + '</div>';
+        h += '<pre class="log-pre">' + esc(r.explanation || '') + '</pre>';
+      } else if (r.action === 'finish') {
+        h += '<div class="log-line done">🏁 ' + esc(r.summary) + '</div>';
+      } else {
+        h += '<div class="log-line">' + esc(JSON.stringify(r)) + '</div>';
+      }
+    });
+    h += '<div class="agent-sec">📦 修改的文件</div><div style="font-size:13px">' + (d.files_changed.length ? esc(d.files_changed.join(', ')) : '（无）') + '</div>';
+    h += '<div class="agent-sec">📌 总结</div><div class="summary">' + esc(d.summary) + '</div>';
+    out.innerHTML = h;
+  }
+
+  document.getElementById('btnAgentRun').addEventListener('click', function () {
+    var btn = this, out = document.getElementById('resultAgent');
+    btn.disabled = true; out.innerHTML = '<span class="dim">🤖 代理正在思考并执行...</span>';
+    call('/v1/agent/run', agentPayload())
+      .then(function (d) { renderAgent(d, out); })
+      .catch(function (e) { out.innerHTML = '错误: ' + esc(e.message); })
+      .then(function () { btn.disabled = false; });
+  });
+
+  document.getElementById('btnAgentPlan').addEventListener('click', function () {
+    var btn = this, out = document.getElementById('resultAgent');
+    btn.disabled = true; out.textContent = '制定计划中...';
+    call('/v1/agent/plan', agentPayload())
+      .then(function (d) {
+        var s = '【计划预览】后端: ' + d.backend + '\n' + d.plan.map(function (p, i) { return (i + 1) + '. ' + p; }).join('\n');
+        out.innerHTML = esc(s);
+      })
+      .catch(function (e) { out.innerHTML = '错误: ' + esc(e.message); })
+      .then(function () { btn.disabled = false; });
+  });
+
+  // ===== 文件浏览器 =====
+  function loadFiles() {
+    var out = document.getElementById('fileList');
+    out.textContent = '加载中...';
+    call('/v1/fs/list', { workspace: document.getElementById('txtWorkspace').value || null })
+      .then(function (d) {
+        if (!d.files.length) { out.textContent = '（空工作区）'; return; }
+        out.innerHTML = d.files.map(function (f) {
+          return '<span class="fileitem" data-p="' + esc(f.path) + '">📄 ' + esc(f.path) + ' (' + f.size + ' B)</span>';
+        }).join('');
+        out.querySelectorAll('.fileitem').forEach(function (el) {
+          el.addEventListener('click', function () {
+            document.getElementById('txtReadPath').value = el.getAttribute('data-p');
+            readFile();
+          });
+        });
+      })
+      .catch(function (e) { out.innerHTML = '错误: ' + esc(e.message); });
+  }
+  function readFile() {
+    var out = document.getElementById('fileContent');
+    out.textContent = '读取中...';
+    call('/v1/fs/read', {
+      path: document.getElementById('txtReadPath').value,
+      workspace: document.getElementById('txtWorkspace').value || null
+    }).then(function (d) { out.textContent = d.content; })
+      .catch(function (e) { out.textContent = '错误: ' + esc(e.message); });
+  }
+  document.getElementById('btnListFiles').addEventListener('click', loadFiles);
+  document.getElementById('btnReadFile').addEventListener('click', readFile);
+
+  // ===== 命令控制台 =====
+  document.getElementById('btnExec').addEventListener('click', function () {
+    var btn = this, out = document.getElementById('execOut');
+    btn.disabled = true; out.textContent = '执行中...';
+    call('/v1/exec', {
+      cmd: document.getElementById('txtCmd').value,
+      workspace: document.getElementById('txtWorkspace').value || null
+    }).then(function (d) {
+      var s = '> ' + d.cmd + '  (cwd: ' + d.cwd + ')\n返回码: ' + d.returncode + '\n';
+      if (d.stdout) s += '\n' + d.stdout;
+      if (d.stderr) s += '\n[stderr]\n' + d.stderr;
+      out.textContent = s;
+    }).catch(function (e) { out.textContent = '错误: ' + esc(e.message); })
+      .then(function () { btn.disabled = false; });
+  });
+})();
+</script>
+</body>
+</html>

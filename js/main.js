@@ -97,4 +97,72 @@
   }
   setTimeout(typeNext, 600);
 
+
+  /* ---------- 数据修改拦截演示 ---------- */
+  var gLog = document.getElementById('guardLog');
+  var gProg = document.getElementById('gProg');
+  var gPath = document.getElementById('gPath');
+  var gBlock = document.getElementById('gBlock');
+  var gAllow = document.getElementById('gAllow');
+  var gRestore = document.getElementById('gRestore');
+  var gRetry = document.getElementById('gRetry');
+  var gTrustChip = document.getElementById('gTrustChip');
+  var gAlert = document.querySelector('.guard-alert');
+
+  if (gLog && gProg){
+    var guardAttacks = [
+      { prog:'unknown.exe', path:'C:\\Users\\you\\Documents\\期末论文.docx', kind:'修改' },
+      { prog:'sweeper.exe', path:'C:\\Users\\you\\Pictures\\毕业照.jpg', kind:'删除' },
+      { prog:'rename.exe', path:'C:\\Users\\you\\Downloads\\报表.xlsx', kind:'改名' },
+      { prog:'hacktool.dll', path:'C:\\Users\\you\\AppData\\Roaming\\config.ini', kind:'修改' },
+      { prog:'loader.exe', path:'C:\\Users\\you\\Desktop\\账号密码.txt', kind:'修改' }
+    ];
+    var guardIdx = 0;
+    var guardTrusted = 0;
+    var gSimActive = true;
+
+    function gAddLine(text, cls){
+      var p = document.createElement('p');
+      if (cls) p.className = cls;
+      p.textContent = text;
+      gLog.appendChild(p);
+      gLog.scrollTop = gLog.scrollHeight;
+    }
+    function gSimulateAttack(){
+      var a = guardAttacks[guardIdx % guardAttacks.length];
+      guardIdx++;
+      gProg.textContent = a.prog;
+      gPath.textContent = a.path;
+      gAlert.classList.remove('g-done');
+      gAlert.style.opacity = '1';
+      gSimActive = true;
+      gAddLine('⚠️ ' + a.prog + ' 尝试' + a.kind + '数据 → ' + a.path, 'gl-warn');
+      gAddLine('🛡️ 二伯杀毒实时拦截，原文件已自动备份到 .erbai-guard/backup/', 'gl-bad');
+      gAddLine('📌 等待用户选择：信任并放行 / 继续拦截 / 回滚恢复', 'gl-cyan');
+    }
+    function gSetDone(msg, cls){
+      gAlert.classList.add('g-done');
+      gSimActive = false;
+      gAddLine(msg, cls);
+    }
+    gBlock.addEventListener('click', function(){
+      if (!gSimActive) return;
+      gSetDone('⛔ 已继续拦截：保持文件原样，可疑程序已记录在案', 'gl-bad');
+    });
+    gAllow.addEventListener('click', function(){
+      if (!gSimActive) return;
+      guardTrusted++;
+      gTrustChip.textContent = '信任区：' + guardTrusted + ' 项';
+      gSetDone('✓ 已信任并放行：' + gProg.textContent + ' 已加入信任区，之后不再拦截', 'gl-ok');
+    });
+    gRestore.addEventListener('click', function(){
+      if (!gSimActive) return;
+      gSetDone('↩ 已回滚恢复：已从自动备份还原原始文件', 'gl-cyan');
+    });
+    gRetry.addEventListener('click', function(){
+      gSimulateAttack();
+    });
+    gSimulateAttack();
+  }
+
 })();

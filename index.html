@@ -20,6 +20,7 @@
     </a>
     <nav class="nav-links">
       <a href="#features">特性</a>
+      <a href="#guard-demo">拦截演示</a>
       <a href="#ui">界面</a>
       <a href="#stats">数据</a>
       <a href="#tech">原理</a>
@@ -36,9 +37,9 @@
   <div class="hero-grid"></div>
   <div class="container hero-inner">
     <div class="hero-text">
-      <span class="badge">v2.0 · C++ 学习项目</span>
+      <span class="badge">v2.1 · C++ 学习项目</span>
       <h1>二伯杀毒 <span class="grad">ErBaiAV</span></h1>
-      <p class="hero-sub">特征库查杀 + 启发式分析 + 隔离区管理 + 实时监控。<br>
+      <p class="hero-sub">特征库查杀 + 启发式分析 + 隔离区管理 + 实时监控 + 数据修改拦截。<br>
         卡巴斯基同款技术栈的核心原理，用 <b>C++ 从零实现</b>。</p>
       <div class="hero-actions">
         <a class="btn btn-primary btn-lg" href="downloads/ErBaiAV.exe" download>
@@ -65,6 +66,8 @@
           <p class="t-cyan">[扫描] C:\Users\you\Downloads\invoice.pdf <span class="t-ok">✓ 干净</span></p>
           <p class="t-cyan">[扫描] C:\Users\you\Downloads\setup.exe <span class="t-warn">⚠ 可疑 (启发式 3/10)</span></p>
           <p class="t-cyan">[扫描] C:\Users\you\Downloads\crack.zip <span class="t-bad">✗ 发现威胁 EICAR-Test-File</span></p>
+          <p class="t-cyan">[防护] unknown.exe 修改 C:\Users\you\Documents\期末论文.docx <span class="t-bad">⛔ 已拦截</span></p>
+          <p class="t-dim">备份: .erbai-guard\backup\evt_xxx\期末论文.docx &nbsp;|&nbsp; 等待用户选择: 信任 / 拦截 / 回滚</p>
           <p class="t-dim">--------------------------------</p>
           <p>已扫描 <b class="t-cyan">1,284</b> 个文件 · 发现 <b class="t-bad">3</b> 个威胁 · 已隔离 <b class="t-purple">3</b> 个</p>
           <p class="t-dim">退出码 2 = 发现威胁 &nbsp;|&nbsp; 实时监控运行中 <span class="pulse-dot"></span></p>
@@ -109,6 +112,11 @@
         <p>基于 ReadDirectoryChangesW 监视目录变化，新文件出现即自动扫描，可一键自动隔离。</p>
       </article>
       <article class="card feat">
+        <div class="feat-icon">🛑</div>
+        <h3>数据修改拦截</h3>
+        <p>程序修改电脑数据（写入/删除/改名）时<b>直接拦截</b>并自动备份，拦截后可选择<b>信任放行</b>或<b>回滚恢复</b>。</p>
+      </article>
+      <article class="card feat">
         <div class="feat-icon">🧊</div>
         <h3>隔离区管理</h3>
         <p>检测到威胁移动到隔离区，支持一键恢复或彻底删除，附元数据记录，误报可轻松找回。</p>
@@ -133,6 +141,46 @@
         <h3>六页赛博 GUI</h3>
         <p>防护中心 / 病毒查杀 / 隔离区 / 信任区 / 工具箱 / 设置，霓虹光效 + HUD 网格 + 切角卡片。</p>
       </article>
+    </div>
+  </div>
+</section>
+
+<!-- ======== 数据修改拦截演示 ======== -->
+<section class="section section-dark" id="guard-demo">
+  <div class="container">
+    <div class="section-head">
+      <h2>🛑 数据修改拦截</h2>
+      <p>发现程序修改电脑数据 → 直接拦截 → 可选信任放行 / 回滚恢复</p>
+    </div>
+    <div class="guard-wrap">
+      <div class="guard-steps">
+        <div class="guard-step"><b>1</b><span>未知程序尝试修改数据（写入 / 删除 / 改名）</span></div>
+        <div class="guard-step"><b>2</b><span>二伯杀毒实时拦截，自动备份原文件</span></div>
+        <div class="guard-step"><b>3</b><span>选择「信任并放行」加入信任区，或「继续拦截」「回滚恢复」</span></div>
+      </div>
+      <div class="guard-demo-box">
+        <div class="guard-alert">
+          <div class="guard-alert-head">⚠️ 二伯杀毒 — 数据修改拦截</div>
+          <div class="guard-alert-body">
+            <p><b class="g-bad" id="gProg">unknown.exe</b> 正在尝试修改数据文件：</p>
+            <p class="g-path" id="gPath">C:\Users\you\Documents\期末论文.docx</p>
+            <p class="g-reason">该程序不在信任区，修改已被拦截，原文件已自动备份。</p>
+            <div class="guard-btns">
+              <button class="btn btn-ghost" id="gBlock">⛔ 继续拦截</button>
+              <button class="btn btn-primary" id="gAllow">✓ 信任并放行</button>
+              <button class="btn btn-ghost" id="gRestore">↩ 回滚恢复</button>
+            </div>
+          </div>
+        </div>
+        <div class="guard-console">
+          <div class="guard-console-head">
+            <span class="guard-console-title">📜 防护日志</span>
+            <button class="btn btn-ghost guard-retry" id="gRetry">🔄 再模拟一次</button>
+            <span class="guard-trust-chip" id="gTrustChip">信任区：0 项</span>
+          </div>
+          <div class="guard-log" id="guardLog"></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -340,14 +388,14 @@ python update_database.py --daily --main</code></pre>
       <article class="card dl-card">
         <div class="dl-icon">🖥️</div>
         <h3>图形版 ErBaiAV.exe</h3>
-        <p>v2.0 赛博朋克 GUI · 六页面 · 实时防护 · 病毒查杀 · 隔离区</p>
+        <p>v2.1 赛博朋克 GUI · 六页面 · 实时防护 · 数据修改拦截 · 病毒查杀 · 隔离区</p>
         <div class="dl-meta">547 KB · Windows x64 · 免安装</div>
         <a class="btn btn-primary" href="downloads/ErBaiAV.exe" download>⬇ 下载图形版</a>
       </article>
       <article class="card dl-card">
         <div class="dl-icon">⌨️</div>
         <h3>命令行版 erbai_av.exe</h3>
-        <p>scan / monitor / yara / quarantine / whitelist / process，适合脚本与自动化</p>
+        <p>scan / monitor / yara / quarantine / whitelist / guard / process，适合脚本与自动化</p>
         <div class="dl-meta">468 KB · Windows x64 · 退出码 0=干净 2=威胁</div>
         <a class="btn btn-ghost" href="downloads/erbai_av.exe" download>⬇ 下载命令行版</a>
       </article>
@@ -394,6 +442,10 @@ python update_database.py --daily --main</code></pre>
       <details>
         <summary>扫描到误报了怎么办？</summary>
         <p>将文件加入信任区（whitelist --add &lt;文件&gt;），或从隔离区一键恢复。启发式误报可通过关闭 --heu 参数降低灵敏度。</p>
+      </details>
+      <details>
+        <summary>拦截到修改数据后，怎么选择信任？</summary>
+        <p>拦截弹窗里点「信任并放行」会把该文件加入信任区，之后不再拦截它的修改；点「继续拦截」保持文件原样；点「回滚恢复」可从自动备份还原文件。也可用命令行 <code>guard trust &lt;路径&gt;</code> / <code>whitelist --add</code> 手动管理信任区。</p>
       </details>
       <details>
         <summary>支持哪些平台？</summary>

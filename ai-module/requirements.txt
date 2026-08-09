@@ -1,0 +1,4 @@
+# 二伯AI 服务零依赖（仅 Python 3.10+ 标准库即可运行）
+# 可选增强（二选一或都装）：
+#   pip install sentence-transformers     # BERT 式句向量
+#   pip install requests                  # Python SDK 用 requests（不装也能用 urllib 降级）

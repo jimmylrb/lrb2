@@ -360,6 +360,132 @@ code{font-family:var(--mono);background:rgba(0,229,255,.08);border:1px solid var
 .footer a:hover{color:var(--cyan)}
 .copyright{text-align:center;color:#4a5878;font-size:.8rem;border-top:1px solid rgba(0,229,255,.08);padding-top:22px}
 
+/* ---------- 半透明下载按钮 / 密码门 ---------- */
+.vault{
+  position:relative;overflow:hidden;
+  margin:0 0 30px;padding:24px 28px;
+  display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  border:1px solid var(--line);border-radius:var(--radius);
+  background:linear-gradient(160deg,rgba(0,229,255,.07),rgba(180,77,255,.06));
+}
+.vault::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),var(--purple),transparent);
+  opacity:.85;
+}
+.vault-text h4{font-size:1.05rem;color:var(--text);margin-bottom:6px}
+.vault-text p{color:var(--muted);font-size:.86rem}
+.vault-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.vault-meta span{
+  font-family:var(--mono);font-size:.74rem;color:#8fd8ea;
+  border:1px solid var(--line);background:rgba(0,229,255,.06);
+  padding:3px 10px;border-radius:20px;
+}
+
+/* 半透明毛玻璃按钮 */
+.btn-glass{
+  position:relative;overflow:hidden;
+  background:rgba(0,229,255,.10);
+  border:1px solid rgba(0,229,255,.45);
+  color:#d9f6ff;
+  opacity:.85;
+  backdrop-filter:blur(10px) saturate(150%);
+  -webkit-backdrop-filter:blur(10px) saturate(150%);
+  box-shadow:0 0 20px rgba(0,229,255,.18),inset 0 1px 0 rgba(255,255,255,.12);
+  text-shadow:0 0 12px rgba(0,229,255,.4);
+}
+.btn-glass:hover{
+  opacity:1;transform:translateY(-2px);
+  background:rgba(0,229,255,.20);
+  border-color:var(--cyan);
+  box-shadow:0 0 32px rgba(0,229,255,.45),inset 0 1px 0 rgba(255,255,255,.2);
+}
+.btn-glass:active{transform:translateY(0)}
+.btn-glass::after{
+  content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
+  transform:skewX(-20deg);transition:left .6s;
+}
+.btn-glass:hover::after{left:130%}
+.vault-btn-lock{filter:drop-shadow(0 0 8px rgba(0,229,255,.7))}
+
+/* 密码弹窗 */
+.vault-modal{
+  position:fixed;inset:0;z-index:200;display:none;
+  align-items:center;justify-content:center;padding:20px;
+}
+.vault-modal.open{display:flex}
+.vault-modal-backdrop{
+  position:absolute;inset:0;background:rgba(3,6,12,.78);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+}
+.vault-dialog{
+  position:relative;width:100%;max-width:440px;
+  background:linear-gradient(160deg,#0d1424,#111a30);
+  border:1px solid rgba(0,229,255,.35);border-radius:16px;
+  box-shadow:0 0 60px rgba(0,229,255,.22),0 30px 80px rgba(0,0,0,.7);
+  overflow:hidden;animation:dialogIn .28s cubic-bezier(.16,.84,.44,1);
+}
+@keyframes dialogIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
+.vault-dialog::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--cyan),var(--purple));
+  box-shadow:0 0 16px rgba(0,229,255,.7);
+}
+.vault-dialog.shake{animation:shake .4s}
+@keyframes shake{
+  10%,90%{transform:translateX(-4px)}
+  20%,80%{transform:translateX(6px)}
+  30%,50%,70%{transform:translateX(-9px)}
+  40%,60%{transform:translateX(9px)}
+}
+.vault-dialog-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--line);
+}
+.vault-dialog-title{font-weight:700;font-size:.95rem;color:var(--cyan);text-shadow:0 0 14px rgba(0,229,255,.45)}
+.vault-close{
+  background:none;border:none;color:var(--muted);font-size:1rem;
+  cursor:pointer;padding:4px 9px;border-radius:6px;transition:.2s;font-family:var(--font);
+}
+.vault-close:hover{color:var(--danger);background:rgba(255,56,96,.1)}
+.vault-dialog-body{padding:22px 20px 20px}
+.vault-file{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;margin-bottom:18px;
+  border:1px solid var(--line);border-radius:10px;background:rgba(0,229,255,.04);
+}
+.vault-file-icon{font-size:1.6rem;filter:drop-shadow(0 0 10px rgba(0,229,255,.45))}
+.vault-file-info{min-width:0}
+.vault-file b{display:block;font-size:.9rem;color:var(--text);font-family:var(--mono);word-break:break-all}
+.vault-file small{display:block;color:#5b6b8a;font-size:.71rem;font-family:var(--mono);word-break:break-all;margin-top:2px}
+.vault-label{display:block;color:var(--muted);font-size:.82rem;margin-bottom:8px}
+.vault-input-wrap{position:relative;display:flex;align-items:center}
+.vault-input{
+  width:100%;padding:12px 44px 12px 14px;border-radius:10px;
+  background:rgba(7,11,20,.9);border:1px solid var(--line);
+  color:var(--text);font-family:var(--mono);font-size:.92rem;
+  outline:none;transition:.2s;
+}
+.vault-input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,.12)}
+.vault-input::placeholder{color:#4a5878}
+.vault-input:disabled{opacity:.5;cursor:not-allowed}
+.vault-eye{
+  position:absolute;right:6px;background:none;border:none;cursor:pointer;
+  color:var(--muted);font-size:1rem;padding:8px;border-radius:8px;transition:.2s;line-height:1;
+}
+.vault-eye:hover{color:var(--cyan);background:rgba(0,229,255,.08)}
+.vault-msg{min-height:20px;margin-top:10px;font-size:.8rem;font-family:var(--mono);line-height:1.6}
+.vault-msg.err{color:var(--danger)}
+.vault-msg.ok{color:var(--ok)}
+.vault-msg.warn{color:var(--warn)}
+.vault-msg.cyan{color:#8fd8ea}
+.vault-actions{display:flex;gap:10px;margin-top:8px}
+.vault-actions .btn{flex:1;justify-content:center}
+.vault-actions .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.vault-hint{margin-top:14px;color:#4a5878;font-size:.76rem;text-align:center;line-height:1.7}
+.vault-body-lock{overflow:hidden}
+
 /* ---------- 数据修改拦截演示 ---------- */
 .guard-wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
 .guard-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
@@ -447,6 +573,9 @@ code{font-family:var(--mono);background:rgba(0,229,255,.08);border:1px solid var
   .db-total{border-right:none;border-bottom:1px solid var(--line);padding-right:0;padding-bottom:24px}
 }
 @media (max-width:768px){  .guard-steps{grid-template-columns:1fr}
+  .vault{flex-direction:column;align-items:stretch;text-align:center;padding:22px 20px;gap:18px}
+  .vault-meta{justify-content:center}
+  .vault .btn-glass{width:100%;justify-content:center}
 
   .nav-links{display:none;position:absolute;top:64px;left:0;right:0;background:rgba(7,11,20,.98);flex-direction:column;padding:18px 24px;gap:16px;border-bottom:1px solid var(--line)}
   .nav-links.open{display:flex}

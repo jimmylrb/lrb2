@@ -165,4 +165,241 @@
     gSimulateAttack();
   }
 
+  /* ==========================================================
+     受保护下载：半透明按钮 + 密码门
+     ----------------------------------------------------------
+     配置：改 VAULT 里的 url / filename / passHash 即可。
+     新增密码摘要的算法见文件末尾注释。
+     ========================================================== */
+  var VAULT = {
+    /* 主下载地址。187 MB 超过 GitHub 单文件 100 MB 限制，不能走 Pages，
+       放到 Releases（单文件上限 2 GB）或任意直链/网盘直链。
+       ↓ 换成网盘直链时，只改这一行。 */
+    url: 'https://github.com/jimmylrb/lrb2/releases/download/v1.6/csv1.6%E4%B8%AD%E6%96%87%E7%89%88.exe',
+    /* 保存到本地的文件名（同源时生效；跨域时取决于服务端 Content-Disposition） */
+    filename: 'csv1.6中文版.exe',
+    /* 访问密码的 SHA-256 摘要 —— 明文不写入源码，改密码见文件末尾说明 */
+    passHash: '06ef2991800a07a401ab1f1e91b1d85f263e4cf14e3012783eb117e6d54bc45e',
+    maxTries: 5,
+    lockMs: 30000
+  };
+
+  /* ---------- SHA-256：优先 WebCrypto，非安全上下文回退纯 JS ---------- */
+  function utf8Bytes(str){
+    var out = [], i, c;
+    for (i = 0; i < str.length; i++){
+      c = str.charCodeAt(i);
+      if (c < 0x80) out.push(c);
+      else if (c < 0x800) out.push(0xc0 | (c >> 6), 0x80 | (c & 0x3f));
+      else if (c >= 0xd800 && c <= 0xdbff){
+        var c2 = str.charCodeAt(++i);
+        c = 0x10000 + ((c - 0xd800) << 10) + (c2 - 0xdc00);
+        out.push(0xf0 | (c >> 18), 0x80 | ((c >> 12) & 0x3f), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f));
+      } else if (c >= 0xdc00 && c <= 0xdfff){
+        out.push(0xef, 0xbf, 0xbd);
+      } else {
+        out.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f));
+      }
+    }
+    return out;
+  }
+
+  function sha256Pure(str){
+    var K = [
+      0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+      0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+      0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+      0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+      0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+      0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+      0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+      0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+    ];
+    var H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    var msg = utf8Bytes(str);
+    var l = msg.length;
+    var bitHi = Math.floor(l / 536870912);
+    var bitLo = (l << 3) >>> 0;
+    msg.push(0x80);
+    while (msg.length % 64 !== 56) msg.push(0);
+    msg.push((bitHi >>> 24) & 0xff, (bitHi >>> 16) & 0xff, (bitHi >>> 8) & 0xff, bitHi & 0xff);
+    msg.push((bitLo >>> 24) & 0xff, (bitLo >>> 16) & 0xff, (bitLo >>> 8) & 0xff, bitLo & 0xff);
+
+    var w = new Array(64);
+    function rr(x, n){ return (x >>> n) | (x << (32 - n)); }
+
+    for (var off = 0; off < msg.length; off += 64){
+      var i;
+      for (i = 0; i < 16; i++){
+        w[i] = ((msg[off + i*4] << 24) | (msg[off + i*4+1] << 16) | (msg[off + i*4+2] << 8) | msg[off + i*4+3]) | 0;
+      }
+      for (i = 16; i < 64; i++){
+        var s0 = rr(w[i-15], 7) ^ rr(w[i-15], 18) ^ (w[i-15] >>> 3);
+        var s1 = rr(w[i-2], 17) ^ rr(w[i-2], 19) ^ (w[i-2] >>> 10);
+        w[i] = (w[i-16] + s0 + w[i-7] + s1) | 0;
+      }
+      var a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+      for (i = 0; i < 64; i++){
+        var S1 = rr(e, 6) ^ rr(e, 11) ^ rr(e, 25);
+        var ch = (e & f) ^ (~e & g);
+        var t1 = (h + S1 + ch + K[i] + w[i]) | 0;
+        var S0 = rr(a, 2) ^ rr(a, 13) ^ rr(a, 22);
+        var maj = (a & b) ^ (a & c) ^ (b & c);
+        var t2 = (S0 + maj) | 0;
+        h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+      }
+      H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+      H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+    }
+    return H.map(function(x){ return ('00000000' + (x >>> 0).toString(16)).slice(-8); }).join('');
+  }
+
+  function sha256Hex(str){
+    if (window.crypto && window.crypto.subtle && window.crypto.subtle.digest && window.TextEncoder){
+      try {
+        var buf = new TextEncoder().encode(str);
+        return window.crypto.subtle.digest('SHA-256', buf).then(function(ab){
+          var b = new Uint8Array(ab), s = '';
+          for (var i = 0; i < b.length; i++) s += ('0' + b[i].toString(16)).slice(-2);
+          return s;
+        });
+      } catch (e){ /* 回退到纯 JS */ }
+    }
+    return Promise.resolve(sha256Pure(str));
+  }
+
+  /* ---------- 密码门逻辑 ---------- */
+  window.lrbSha256 = sha256Hex; /* 便于在控制台为新密码生成摘要 */
+  var vModal = document.getElementById('vaultModal');
+  if (vModal){
+    var vDialog = vModal.querySelector('.vault-dialog');
+    var vBtn = document.getElementById('vaultBtn');
+    var vClose = document.getElementById('vaultClose');
+    var vCancel = document.getElementById('vaultCancel');
+    var vSubmit = document.getElementById('vaultSubmit');
+    var vPass = document.getElementById('vaultPass');
+    var vMsg = document.getElementById('vaultMsg');
+    var vEye = document.getElementById('vaultEye');
+    var vTries = 0;
+    var vLockUntil = 0;
+
+    function vSetMsg(text, cls){
+      vMsg.textContent = text || '';
+      vMsg.className = 'vault-msg' + (cls ? ' ' + cls : '');
+    }
+    function vShake(){
+      vDialog.classList.remove('shake');
+      void vDialog.offsetWidth; /* 强制重排以重启动画 */
+      vDialog.classList.add('shake');
+      setTimeout(function(){ vDialog.classList.remove('shake'); }, 460);
+    }
+    function vOpenModal(){
+      vModal.classList.add('open');
+      vModal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('vault-body-lock');
+      vPass.value = '';
+      vPass.type = 'password';
+      vEye.textContent = '👁';
+      vSetMsg('');
+      setTimeout(function(){ vPass.focus(); }, 60);
+    }
+    function vCloseModal(){
+      vModal.classList.remove('open');
+      vModal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('vault-body-lock');
+      vPass.value = '';
+      vPass.type = 'password';
+      vEye.textContent = '👁';
+    }
+    function vStartLock(){
+      vLockUntil = Date.now() + VAULT.lockMs;
+      vSubmit.disabled = true;
+      vPass.disabled = true;
+      (function tick(){
+        var left = Math.ceil((vLockUntil - Date.now()) / 1000);
+        if (left > 0){
+          vSetMsg('⛔ 尝试次数过多，请等待 ' + left + ' 秒', 'err');
+          setTimeout(tick, 250);
+        } else {
+          vTries = 0;
+          vSubmit.disabled = false;
+          vPass.disabled = false;
+          vSetMsg('');
+        }
+      })();
+    }
+    function vStartDownload(){
+      var a = document.createElement('a');
+      a.href = VAULT.url;
+      a.setAttribute('download', VAULT.filename);
+      a.rel = 'noopener';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function(){
+        vSetMsg('📦 已开始下载 · 178.8 MB，若被浏览器拦截请允许本站下载', 'cyan');
+      }, 1200);
+    }
+    function vVerify(){
+      if (Date.now() < vLockUntil) return;
+      var val = vPass.value;
+      if (!val){
+        vShake();
+        vSetMsg('请输入访问密码', 'err');
+        vPass.focus();
+        return;
+      }
+      vSubmit.disabled = true;
+      vSetMsg('校验中…');
+      sha256Hex(val).then(function(h){
+        vSubmit.disabled = false;
+        if (h === VAULT.passHash){
+          vTries = 0;
+          vPass.value = '';
+          vSetMsg('✅ 密码正确，正在开始下载…', 'ok');
+          vStartDownload();
+        } else {
+          vTries++;
+          vShake();
+          vPass.select();
+          if (vTries >= VAULT.maxTries){
+            vStartLock();
+          } else {
+            vSetMsg('❌ 密码错误，还可尝试 ' + (VAULT.maxTries - vTries) + ' 次', 'err');
+          }
+        }
+      }).catch(function(){
+        vSubmit.disabled = false;
+        vSetMsg('⚠️ 当前环境不支持密码校验，请通过 http(s) 访问本页', 'warn');
+      });
+    }
+
+    vBtn.addEventListener('click', vOpenModal);
+    vClose.addEventListener('click', vCloseModal);
+    vCancel.addEventListener('click', vCloseModal);
+    vSubmit.addEventListener('click', vVerify);
+    vEye.addEventListener('click', function(){
+      var show = vPass.type === 'password';
+      vPass.type = show ? 'text' : 'password';
+      vEye.textContent = show ? '🙈' : '👁';
+      vPass.focus();
+    });
+    vPass.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.keyCode === 13) vVerify();
+    });
+    vModal.addEventListener('click', function(e){
+      if (e.target.getAttribute && e.target.getAttribute('data-close') !== null) vCloseModal();
+    });
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && vModal.classList.contains('open')) vCloseModal();
+    });
+  }
+
 })();
+
+/* ----------------------------------------------------------
+   改密码后重新生成摘要（在任意已加载本页的控制台执行）：
+   lrbSha256('新密码').then(console.log)
+   把结果填回 VAULT.passHash 即可。
+   ---------------------------------------------------------- */

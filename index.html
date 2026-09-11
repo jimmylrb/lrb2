@@ -475,9 +475,57 @@ python update_database.py --daily --main</code></pre>
         <a href="#tech">技术原理</a>
       </div>
     </div>
+    <!-- ======== 受保护下载（半透明按钮 + 密码门） ======== -->
+    <div class="vault">
+      <div class="vault-text">
+        <h4>🔒 csv1.6 中文版</h4>
+        <p>私人分发包 · 需要访问密码才能下载</p>
+        <div class="vault-meta">
+          <span>178.8 MB</span>
+          <span>Windows x64</span>
+          <span>密码保护</span>
+        </div>
+      </div>
+      <button type="button" class="btn btn-glass btn-lg" id="vaultBtn">
+        <span class="vault-btn-lock">🔒</span> 下载 csv1.6 中文版
+      </button>
+    </div>
+
     <p class="copyright">© 2026 二伯杀毒 ErBaiAV · 学习用途，请勿用于恶意目的 · 不收集任何用户数据</p>
   </div>
 </footer>
+
+<!-- ======== 密码验证弹窗 ======== -->
+<div class="vault-modal" id="vaultModal" role="dialog" aria-modal="true" aria-labelledby="vaultTitle" aria-hidden="true">
+  <div class="vault-modal-backdrop" data-close></div>
+  <div class="vault-dialog">
+    <div class="vault-dialog-head">
+      <span class="vault-dialog-title" id="vaultTitle">🔒 受保护的文件</span>
+      <button type="button" class="vault-close" id="vaultClose" aria-label="关闭">✕</button>
+    </div>
+    <div class="vault-dialog-body">
+      <div class="vault-file">
+        <span class="vault-file-icon">📦</span>
+        <span class="vault-file-info">
+          <b>csv1.6中文版.exe</b>
+          <small>178.8 MB · SHA-256 353eaaca…751a</small>
+        </span>
+      </div>
+      <label class="vault-label" for="vaultPass">访问密码</label>
+      <div class="vault-input-wrap">
+        <input type="password" id="vaultPass" class="vault-input" placeholder="请输入访问密码"
+               autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button type="button" class="vault-eye" id="vaultEye" aria-label="显示密码">👁</button>
+      </div>
+      <p class="vault-msg" id="vaultMsg" role="status" aria-live="polite"></p>
+      <div class="vault-actions">
+        <button type="button" class="btn btn-primary" id="vaultSubmit">验证并下载</button>
+        <button type="button" class="btn btn-ghost" id="vaultCancel">取消</button>
+      </div>
+      <p class="vault-hint">密码由站主私下分发 · 连续输错 5 次将锁定 30 秒</p>
+    </div>
+  </div>
+</div>
 
 <script src="js/main.js"></script>
 </body>

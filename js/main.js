@@ -172,11 +172,20 @@
      新增密码摘要的算法见文件末尾注释。
      ========================================================== */
   var VAULT = {
-    /* 主下载地址。187 MB 超过 GitHub 单文件 100 MB 限制，不能走 Pages，
-       放到 Releases（单文件上限 2 GB）。
+    /* 主下载地址（GitHub 原站）。187 MB 超过 GitHub 单文件 100 MB 限制，
+       不能走 Pages，放到 Releases（单文件上限 2 GB）。
        ⚠️ 资产名必须是纯 ASCII —— GitHub 会静默剥离资产名里的非 ASCII 字符，
           所以原文件名 "csv1.6中文版.exe" 的中文部分会被吃掉。 */
     url: 'https://github.com/jimmylrb/lrb2/releases/download/v1.6/csv1.6-CN.exe',
+    /* 国内加速前缀：拼在原站地址前面走镜像中转。
+       实测国内直连原站 29–67 KB/s（187 MB 要约 60 分钟），
+       经此镜像 2.7–3.5 MB/s（约 1 分钟），且 206 支持断点续传、
+       Content-Disposition 把文件名照常透传。
+       ⚠️ 第三方公益服务，可能随时失效 —— 失效会自动降级到原站，
+          弹窗里也留了手动切换入口。留空字符串则只用原站。 */
+    mirror: 'https://gh-proxy.com/',
+    /* 探测镜像可用性的超时（毫秒）。超时即按原站处理，避免把用户卡住。 */
+    probeMs: 1200,
     /* 保存到本地的文件名。跨域时浏览器会忽略本属性，实际文件名由服务端
        Content-Disposition 决定（= 资产名），这里保持与之一致以免误导。 */
     filename: 'csv1.6-CN.exe',
@@ -303,6 +312,7 @@
       vPass.type = 'password';
       vEye.textContent = '👁';
       vSetMsg('');
+      vShowAlt(false);
       setTimeout(function(){ vPass.focus(); }, 60);
     }
     function vCloseModal(){
@@ -330,18 +340,54 @@
         }
       })();
     }
-    function vStartDownload(){
+    var vAltWrap = document.getElementById('vaultAlt');
+    var vAltLink = document.getElementById('vaultAltLink');
+
+    function vShowAlt(show){
+      if (vAltWrap) vAltWrap.hidden = !show;
+    }
+    /* 真正触发下载。useMirror 为真且配了镜像前缀时走加速通道。 */
+    function vFireDownload(useMirror){
+      var viaMirror = !!(useMirror && VAULT.mirror);
       var a = document.createElement('a');
-      a.href = VAULT.url;
+      a.href = viaMirror ? (VAULT.mirror + VAULT.url) : VAULT.url;
       a.setAttribute('download', VAULT.filename);
       a.rel = 'noopener';
       a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      vShowAlt(true);
       setTimeout(function(){
-        vSetMsg('📦 已开始下载 · 178.8 MB，若被浏览器拦截请允许本站下载', 'cyan');
-      }, 1200);
+        vSetMsg('📦 已通过' + (viaMirror ? '国内加速通道' : ' GitHub 原站') +
+                '开始下载 · 178.8 MB，若被浏览器拦截请允许本站下载', 'cyan');
+      }, 1000);
+    }
+    /* 先探一下加速通道通不通：通了走镜像（实测快约 60 倍），
+       不通或探测超时则降级到原站 —— 保证任何情况下都下得动。 */
+    function vStartDownload(){
+      if (!VAULT.mirror){ vFireDownload(false); return; }
+      var settled = false;
+      var timer = setTimeout(function(){
+        if (settled) return;
+        settled = true;
+        vFireDownload(false);
+      }, VAULT.probeMs);
+      function finish(useMirror){
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        vFireDownload(useMirror);
+      }
+      try {
+        /* HEAD + no-cors：只判网络层可达，不拉响应体。
+           镜像域名挂了/DNS 不通会 reject，正是要检测的情况。 */
+        fetch(VAULT.mirror + VAULT.url, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' })
+          .then(function(){ finish(true); })
+          .catch(function(){ finish(false); });
+      } catch (e){
+        finish(false);
+      }
     }
     function vVerify(){
       if (Date.now() < vLockUntil) return;
@@ -378,6 +424,12 @@
     }
 
     vBtn.addEventListener('click', vOpenModal);
+    if (vAltLink){
+      vAltLink.addEventListener('click', function(e){
+        e.preventDefault();
+        vFireDownload(false);
+      });
+    }
     vClose.addEventListener('click', vCloseModal);
     vCancel.addEventListener('click', vCloseModal);
     vSubmit.addEventListener('click', vVerify);

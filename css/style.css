@@ -381,6 +381,9 @@ code{font-family:var(--mono);background:rgba(0,229,255,.08);border:1px solid var
   border:1px solid var(--line);background:rgba(0,229,255,.06);
   padding:3px 10px;border-radius:20px;
 }
+.vault-meta .vault-meta-fast{
+  color:#d9b8ff;border-color:rgba(180,77,255,.45);background:rgba(180,77,255,.12);
+}
 
 /* 半透明毛玻璃按钮 */
 .btn-glass{
@@ -483,6 +486,16 @@ code{font-family:var(--mono);background:rgba(0,229,255,.08);border:1px solid var
 .vault-actions{display:flex;gap:10px;margin-top:8px}
 .vault-actions .btn{flex:1;justify-content:center}
 .vault-actions .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.vault-alt{
+  margin-top:12px;text-align:center;
+  font-size:.78rem;color:#4a5878;line-height:1.7;
+}
+.vault-alt[hidden]{display:none}
+.vault-alt a{
+  color:#8fd8ea;text-decoration:underline;text-underline-offset:2px;
+  text-decoration-color:rgba(143,216,234,.4);
+}
+.vault-alt a:hover{color:var(--cyan);text-decoration-color:var(--cyan)}
 .vault-hint{margin-top:14px;color:#4a5878;font-size:.76rem;text-align:center;line-height:1.7}
 .vault-body-lock{overflow:hidden}
 

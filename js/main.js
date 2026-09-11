@@ -173,11 +173,13 @@
      ========================================================== */
   var VAULT = {
     /* 主下载地址。187 MB 超过 GitHub 单文件 100 MB 限制，不能走 Pages，
-       放到 Releases（单文件上限 2 GB）或任意直链/网盘直链。
-       ↓ 换成网盘直链时，只改这一行。 */
-    url: 'https://github.com/jimmylrb/lrb2/releases/download/v1.6/csv1.6%E4%B8%AD%E6%96%87%E7%89%88.exe',
-    /* 保存到本地的文件名（同源时生效；跨域时取决于服务端 Content-Disposition） */
-    filename: 'csv1.6中文版.exe',
+       放到 Releases（单文件上限 2 GB）。
+       ⚠️ 资产名必须是纯 ASCII —— GitHub 会静默剥离资产名里的非 ASCII 字符，
+          所以原文件名 "csv1.6中文版.exe" 的中文部分会被吃掉。 */
+    url: 'https://github.com/jimmylrb/lrb2/releases/download/v1.6/csv1.6-CN.exe',
+    /* 保存到本地的文件名。跨域时浏览器会忽略本属性，实际文件名由服务端
+       Content-Disposition 决定（= 资产名），这里保持与之一致以免误导。 */
+    filename: 'csv1.6-CN.exe',
     /* 访问密码的 SHA-256 摘要 —— 明文不写入源码，改密码见文件末尾说明 */
     passHash: '06ef2991800a07a401ab1f1e91b1d85f263e4cf14e3012783eb117e6d54bc45e',
     maxTries: 5,

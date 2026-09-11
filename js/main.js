@@ -179,13 +179,11 @@
     url: 'https://github.com/jimmylrb/lrb2/releases/download/v1.6/csv1.6-CN.exe',
     /* 国内加速前缀：拼在原站地址前面走镜像中转。
        实测国内直连原站 29–67 KB/s（187 MB 要约 60 分钟），
-       经此镜像 2.7–3.5 MB/s（约 1 分钟），且 206 支持断点续传、
+       经此镜像 0.5–3.5 MB/s（约 1–7 分钟），且 206 支持断点续传、
        Content-Disposition 把文件名照常透传。
-       ⚠️ 第三方公益服务，可能随时失效 —— 失效会自动降级到原站，
-          弹窗里也留了手动切换入口。留空字符串则只用原站。 */
+       ⚠️ 第三方公益服务，可能随时失效 —— 弹窗里常驻手动切换入口可回落到原站。
+       留空字符串则只用原站。 */
     mirror: 'https://gh-proxy.com/',
-    /* 探测镜像可用性的超时（毫秒）。超时即按原站处理，避免把用户卡住。 */
-    probeMs: 1200,
     /* 保存到本地的文件名。跨域时浏览器会忽略本属性，实际文件名由服务端
        Content-Disposition 决定（= 资产名），这里保持与之一致以免误导。 */
     filename: 'csv1.6-CN.exe',
@@ -363,31 +361,14 @@
                 '开始下载 · 178.8 MB，若被浏览器拦截请允许本站下载', 'cyan');
       }, 1000);
     }
-    /* 先探一下加速通道通不通：通了走镜像（实测快约 60 倍），
-       不通或探测超时则降级到原站 —— 保证任何情况下都下得动。 */
+    /* 直接走加速通道，不做前置探测。
+       ------------------------------------------------------------
+       为什么不做探测：实测镜像的 HEAD 要 1816 ms 才响应（Cloudflare 回源），
+       而探测的用意是「1.2 秒没答复就当它挂了」—— 结果每次都被误判成挂了，
+       所有人被静默降级回原站，等于白加加速通道。
+       通道选择交给用户：下载开始后弹窗里常驻「改用 GitHub 原站」入口。 */
     function vStartDownload(){
-      if (!VAULT.mirror){ vFireDownload(false); return; }
-      var settled = false;
-      var timer = setTimeout(function(){
-        if (settled) return;
-        settled = true;
-        vFireDownload(false);
-      }, VAULT.probeMs);
-      function finish(useMirror){
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        vFireDownload(useMirror);
-      }
-      try {
-        /* HEAD + no-cors：只判网络层可达，不拉响应体。
-           镜像域名挂了/DNS 不通会 reject，正是要检测的情况。 */
-        fetch(VAULT.mirror + VAULT.url, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' })
-          .then(function(){ finish(true); })
-          .catch(function(){ finish(false); });
-      } catch (e){
-        finish(false);
-      }
+      vFireDownload(true);   /* mirror 为空时 vFireDownload 内部自动走原站 */
     }
     function vVerify(){
       if (Date.now() < vLockUntil) return;

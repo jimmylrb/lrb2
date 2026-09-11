@@ -178,12 +178,20 @@
           所以原文件名 "csv1.6中文版.exe" 的中文部分会被吃掉。 */
     url: 'https://github.com/jimmylrb/lrb2/releases/download/v1.6/csv1.6-CN.exe',
     /* 国内加速前缀：拼在原站地址前面走镜像中转。
-       实测国内直连原站 29–67 KB/s（187 MB 要约 60 分钟），
-       经此镜像 0.5–3.5 MB/s（约 1–7 分钟），且 206 支持断点续传、
-       Content-Disposition 把文件名照常透传。
-       ⚠️ 第三方公益服务，可能随时失效 —— 弹窗里常驻手动切换入口可回落到原站。
+       实测 206 支持断点续传、Content-Disposition 把文件名照常透传。
+       ⚠️ 第三方公益服务，速度随时段剧烈波动（同一镜像实测 3.4 MB/s ↔ 34 KB/s），
+          也可能随时失效 —— 所以下面另列备用通道，让用户能换着试。
        留空字符串则只用原站。 */
     mirror: 'https://gh-proxy.com/',
+    /* 备用加速通道。公共镜像之间相互独立，一个慢另一个未必慢，
+       且单连接被限速（同一镜像 8 线程并发实测 447 KB/s vs 单线程 94 KB/s，4.7 倍），
+       所以把可用通道摆出来让用户自己挑，比在前端猜哪个快更靠谱。
+       —— 前端也测不了速：这些通道都不返回 CORS 头，读不到响应，
+          连耗时都拿不到（没有 Timing-Allow-Origin）。 */
+    altMirrors: [
+      'https://cdn.gh-proxy.com/',
+      'https://ghproxy.net/'
+    ],
     /* 保存到本地的文件名。跨域时浏览器会忽略本属性，实际文件名由服务端
        Content-Disposition 决定（= 资产名），这里保持与之一致以免误导。 */
     filename: 'csv1.6-CN.exe',
@@ -339,16 +347,15 @@
       })();
     }
     var vAltWrap = document.getElementById('vaultAlt');
-    var vAltLink = document.getElementById('vaultAltLink');
 
     function vShowAlt(show){
       if (vAltWrap) vAltWrap.hidden = !show;
     }
-    /* 真正触发下载。useMirror 为真且配了镜像前缀时走加速通道。 */
-    function vFireDownload(useMirror){
-      var viaMirror = !!(useMirror && VAULT.mirror);
+    /* 真正触发下载。prefix 是镜像前缀，传空字符串即走 GitHub 原站。 */
+    function vFireDownload(prefix){
+      var viaMirror = !!prefix;
       var a = document.createElement('a');
-      a.href = viaMirror ? (VAULT.mirror + VAULT.url) : VAULT.url;
+      a.href = (prefix || '') + VAULT.url;
       a.setAttribute('download', VAULT.filename);
       a.rel = 'noopener';
       a.style.display = 'none';
@@ -357,18 +364,19 @@
       document.body.removeChild(a);
       vShowAlt(true);
       setTimeout(function(){
-        vSetMsg('📦 已通过' + (viaMirror ? '国内加速通道' : ' GitHub 原站') +
+        vSetMsg('📦 已通过' + (viaMirror ? '加速通道' : ' GitHub 原站') +
                 '开始下载 · 178.8 MB，若被浏览器拦截请允许本站下载', 'cyan');
       }, 1000);
     }
-    /* 直接走加速通道，不做前置探测。
+    /* 主按钮：直接走主加速通道，不做前置探测。
        ------------------------------------------------------------
        为什么不做探测：实测镜像的 HEAD 要 1816 ms 才响应（Cloudflare 回源），
        而探测的用意是「1.2 秒没答复就当它挂了」—— 结果每次都被误判成挂了，
        所有人被静默降级回原站，等于白加加速通道。
-       通道选择交给用户：下载开始后弹窗里常驻「改用 GitHub 原站」入口。 */
+       前端也没法测速：这些通道都不返回 CORS / Timing-Allow-Origin 头，
+       连响应体都读不到。所以通道选择交给用户 —— 备用入口常驻，随时可换。 */
     function vStartDownload(){
-      vFireDownload(true);   /* mirror 为空时 vFireDownload 内部自动走原站 */
+      vFireDownload(VAULT.mirror);
     }
     function vVerify(){
       if (Date.now() < vLockUntil) return;
@@ -405,10 +413,17 @@
     }
 
     vBtn.addEventListener('click', vOpenModal);
-    if (vAltLink){
-      vAltLink.addEventListener('click', function(e){
+    /* 备用通道：data-alt="mirrorN" 对应 VAULT.altMirrors[N-1]；"origin" 是 GitHub 原站。
+       用事件委托，将来增删通道不用改这里。 */
+    if (vAltWrap){
+      vAltWrap.addEventListener('click', function(e){
+        var el = e.target.closest ? e.target.closest('[data-alt]') : null;
+        if (!el) return;
         e.preventDefault();
-        vFireDownload(false);
+        var key = el.getAttribute('data-alt');
+        if (key === 'origin'){ vFireDownload(''); return; }
+        var i = parseInt(key.replace('mirror', ''), 10) - 1;
+        vFireDownload(VAULT.altMirrors[i] || VAULT.mirror);
       });
     }
     vClose.addEventListener('click', vCloseModal);

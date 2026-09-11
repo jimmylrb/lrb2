@@ -494,6 +494,7 @@ code{font-family:var(--mono);background:rgba(0,229,255,.08);border:1px solid var
 .vault-alt a{
   color:#8fd8ea;text-decoration:underline;text-underline-offset:2px;
   text-decoration-color:rgba(143,216,234,.4);
+  margin-left:10px;white-space:nowrap;
 }
 .vault-alt a:hover{color:var(--cyan);text-decoration-color:var(--cyan)}
 .vault-hint{margin-top:14px;color:#4a5878;font-size:.76rem;text-align:center;line-height:1.7}

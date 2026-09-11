@@ -6,7 +6,7 @@
 <title>二伯杀毒 ErBaiAV · C++ 杀毒引擎</title>
 <meta name="description" content="二伯杀毒 ErBaiAV —— 用 C++ 编写的 Windows 杀毒引擎学习项目。特征库查杀 + 启发式分析 + 隔离区管理 + 实时监控。">
 <link rel="icon" type="image/x-icon" href="assets/ErBaiAV.ico">
-<link rel="stylesheet" href="css/style.css?v=3">
+<link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
 
@@ -523,14 +523,17 @@ python update_database.py --daily --main</code></pre>
         <button type="button" class="btn btn-primary" id="vaultSubmit">验证并下载</button>
         <button type="button" class="btn btn-ghost" id="vaultCancel">取消</button>
       </div>
-      <p class="vault-alt" id="vaultAlt" hidden>
-        下载没开始或很慢？<a href="#" id="vaultAltLink">改用 GitHub 原站</a>（较慢，约 1 小时）
-      </p>
+      <div class="vault-alt" id="vaultAlt" hidden>
+        <span>下载没开始或很慢？换条通道试试：</span>
+        <a href="#" data-alt="mirror1">备用加速 1</a>
+        <a href="#" data-alt="mirror2">备用加速 2</a>
+        <a href="#" data-alt="origin">GitHub 原站</a>
+      </div>
       <p class="vault-hint">密码由站主私下分发 · 连续输错 5 次将锁定 30 秒</p>
     </div>
   </div>
 </div>
 
-<script src="js/main.js?v=3"></script>
+<script src="js/main.js?v=4"></script>
 </body>
 </html>
